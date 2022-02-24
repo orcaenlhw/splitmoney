@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -48,26 +49,64 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var dropdownvalue = "0";
-  var items = ["0", "5", "7"];
-  double perPerson = 0.0;
+  TextEditingController _peopleController = TextEditingController();
+  TextEditingController _totalController = TextEditingController();
+
+  var dropdownvalue = 0;
+  var items = [0, 5, 7];
+  double get perPerson {
+    if (_peopleController.text == "") {
+      return 0;
+    }
+    return actualAmount / int.parse(_peopleController.text);
+  }
+
+  double get actualAmount {
+    if (_totalController.text == "") {
+      return 0.0;
+    }
+    var total = int.parse(_totalController.text);
+    return total + (total * dropdownvalue / 100);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("splitmoney"),
+        title: const Text("SplitMoney"),
       ),
-      body: Padding (
-        padding: const EdgeInsets.only(left:12, right: 12),
+      body: Padding(
+        padding: const EdgeInsets.only(left: 12, right: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-            decoration: InputDecoration(label: Text("Number of People")),
+              controller: _peopleController,
+              onChanged: (value) {
+                setState(() {});
+              },
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                  icon: Icon(
+                    Icons.people,
+                    color: Colors.blue,
+                  ),
+                  label: Text("Number of People")),
+            ),
+            const SizedBox(
+              height: 12,
             ),
             TextField(
-            decoration: InputDecoration(label: Text("Total Amount")),
+              controller: _totalController,
+              onChanged: (value) {
+                setState(() {});
+              },
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                  icon: Icon(Icons.attach_money, color: Colors.green),
+                  label: Text("Total Amount")),
             ),
             const SizedBox(
               height: 12,
@@ -76,29 +115,40 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 const Expanded(child: Text("Tax Percentage")),
                 Expanded(
-                  child: DropdownButton(
+                    child: DropdownButton<int>(
                   isExpanded: true,
                   value: dropdownvalue,
-                  items: items.map((String items) {
+                  items: items.map((int items) {
                     return DropdownMenuItem(
                       value: items,
                       child: Center(
-                        child: Text(
-                        items,
+                          child: Text(
+                        items.toString(),
                         textAlign: TextAlign.center,
                       )),
                     );
-                  }).toList(), 
-                  onChanged: (String? newValue) {
+                  }).toList(),
+                  onChanged: (int? newValue) {
+                    //var total = int.parse(_totalController.text);
                     setState(() {
                       dropdownvalue = newValue!;
-                  });
-                },
-              )),
-      ],
-    ),
-    const SizedBox(
-      height: 12,
-      )
+                      //actualAmount = total + (total * newValue / 100);
+                    });
+                  },
+                )),
+              ],
+            ),
+            const SizedBox(
+              height: 12,
+            ),
+            Text("Actual Amount is $actualAmount"),
+            const SizedBox(
+              height: 12,
+            ),
+            Text("Split money per person is $perPerson")
+          ],
+        ),
+      ),
+    );
   }
 }
